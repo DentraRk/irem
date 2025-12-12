@@ -1,180 +1,433 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Özür Dilerim</title>
-  <!-- El yazısı fontu (Dancing Script) yükleniyor -->
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
+
+  <!-- El yazısı fontu -->
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
-    body {
-      margin: 0;
-      background-color: #008000; /* Yeşil arka plan */
-      font-family: 'Dancing Script', cursive;
-      text-align: center;
-      color: white;
-    }
-    /* İlk sahne kapsayıcısı */
-    #scene1 {
-      position: relative;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-    /* Çiçek görseli */
-    #flower {
-      position: absolute;
-      bottom: -50%; /* başlangıçta görünmeyecek (altın dışında) */
-      left: 50%;
-      transform: translateX(-50%);
-      width: 200px;
-      height: auto;
-      /* animasyon uygulanacak */
-      animation: riseUp 3s ease-out forwards;
-    }
-    /* Çiçek üzerindeki metin */
-    #flowerText {
-      position: absolute;
-      bottom: 40%; /* çiçeğin biraz üzerinde */
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 1.5em;
-      opacity: 0;
-      /* Metin biraz gecikmeli belirsin */
-      animation: fadeInText 2s ease 1s forwards;
-    }
-    /* Devam etme sorusu ve butonlar */
-    #continuePrompt {
-      opacity: 0;
-      margin-top: 60%; /* sayfanın ortasına doğru (çiçeğin altına) */
-      /* Butonların çıkışı biraz daha gecikmeli olsun */
-      animation: fadeInText 2s ease 3.5s forwards;
-    }
-    #continuePrompt p {
-      font-size: 1.3em;
-      margin-bottom: 1em;
-    }
-    #continuePrompt button {
-      font-family: 'Dancing Script', cursive;
-      font-size: 1.1em;
-      padding: 0.5em 1em;
-      margin: 0 1em;
-      border: 2px solid white;
-      background: transparent;
-      color: white;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    #continuePrompt button:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-    /* İkinci sahne kapsayıcısı (başta gizli) */
-    #scene2 {
-      display: none;
-      position: relative;
-      min-height: 100vh;
-    }
-    /* Kalp SVG ve metin konteyneri ortalamak için */
-    #heartContainer {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-    /* SVG kalp boyutu ayarı (mobil uyum için yüzdeyle verilebilir) */
-    #heartSVG {
-      width: 40vw;
-      max-width: 300px;
-      height: auto;
-    }
-    /* Kalp çizimi path stili ve animasyonu */
-    #heartPath {
-      fill: none;
-      stroke: #2196F3;
-      stroke-width: 2;
-      /* Çizim animasyonu için dash array tekniği */
-      stroke-dasharray: 1;
-      stroke-dashoffset: 1;
-      animation: drawHeart 4s ease-out forwards;
-    }
-    /* Özür mesajı stili */
-    #apologyText {
-      margin-top: 20px;
-      font-size: 1.4em;
-      opacity: 0;
-      /* Kalp çizimi bitince belirsin (4s animasyon + 0.5s gecikme) */
-      animation: fadeInText 2s ease 4.5s forwards;
+    :root{
+      --bg: #0f7a3b;          /* yeşil fon */
+      --panel: rgba(255,255,255,.12);
+      --text: #f7fff7;
+      --muted: rgba(247,255,247,.85);
+      --flower: #d11a2a;      /* kırmızı çiçek */
+      --heart: #1f6feb;       /* mavi kalp */
+      --shadow: rgba(0,0,0,.18);
+      --soft: cubic-bezier(.2,.8,.2,1);
     }
 
-    /* Animasyon tanımları */
-    @keyframes riseUp {
-      from { transform: translateY(100%); opacity: 0; }
-      to   { transform: translateY(0); opacity: 1; }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      background: radial-gradient(1200px 700px at 50% 0%, rgba(255,255,255,.14), transparent 60%),
+                  radial-gradient(900px 500px at 20% 20%, rgba(0,0,0,.10), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      font-family: "Dancing Script", cursive;
+      overflow:hidden;
     }
-    @keyframes fadeInText {
-      from { opacity: 0; }
-      to   { opacity: 1; }
+
+    .stage{
+      position:relative;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
     }
-    @keyframes drawHeart {
-      from { stroke-dashoffset: 1; }
-      to   { stroke-dashoffset: 0; }
+
+    /* Sahne geçişleri */
+    .scene{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      opacity:0;
+      transform: scale(.98);
+      pointer-events:none;
+      transition: opacity 700ms var(--soft), transform 700ms var(--soft);
+    }
+    .scene.active{
+      opacity:1;
+      transform: scale(1);
+      pointer-events:auto;
+    }
+
+    .card{
+      width:min(680px, 94vw);
+      padding:18px 18px 14px;
+      border-radius:22px;
+      background: var(--panel);
+      box-shadow: 0 18px 45px var(--shadow);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.18);
+      text-align:center;
+    }
+
+    .headline{
+      font-size: clamp(28px, 5vw, 46px);
+      font-weight: 700;
+      letter-spacing: .2px;
+      margin: 6px 0 10px;
+      opacity:0;
+      transform: translateY(10px);
+      animation: fadeUp 900ms var(--soft) forwards;
+      animation-delay: 450ms;
+    }
+
+    .subline{
+      font-size: clamp(18px, 3.6vw, 26px);
+      color: var(--muted);
+      margin: 0 0 12px;
+      opacity:0;
+      transform: translateY(10px);
+      animation: fadeUp 900ms var(--soft) forwards;
+      animation-delay: 850ms;
+    }
+
+    @keyframes fadeUp{
+      to { opacity:1; transform: translateY(0); }
+    }
+
+    /* Çiçek alanı */
+    .flowerWrap{
+      width:min(520px, 92vw);
+      margin: 8px auto 14px;
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      height: clamp(240px, 45vh, 420px);
+      position:relative;
+      overflow:visible;
+    }
+
+    .flowerSVG{
+      width: min(420px, 86vw);
+      height: auto;
+      filter: drop-shadow(0 18px 28px rgba(0,0,0,.20));
+      transform: translateY(120%);
+      opacity:0;
+      animation: flowerRise 1800ms var(--soft) forwards;
+      animation-delay: 250ms;
+    }
+
+    @keyframes flowerRise{
+      to { transform: translateY(0%); opacity:1; }
+    }
+
+    /* Sorular ve butonlar */
+    .prompt{
+      margin-top: 6px;
+      opacity:0;
+      transform: translateY(10px);
+      animation: fadeUp 900ms var(--soft) forwards;
+      animation-delay: 1550ms;
+    }
+
+    .q{
+      font-size: clamp(20px, 4vw, 30px);
+      margin: 10px 0 10px;
+      font-weight: 600;
+    }
+
+    .btnRow{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top: 8px;
+    }
+
+    .btn{
+      border: 1px solid rgba(255,255,255,.35);
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 22px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      cursor:pointer;
+      transition: transform 200ms var(--soft), background 200ms var(--soft), border-color 200ms var(--soft);
+      box-shadow: 0 12px 30px rgba(0,0,0,.12);
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-2px) scale(1.02); background: rgba(255,255,255,.16); }
+    .btn:active{ transform: translateY(0) scale(.99); }
+
+    .hint{
+      margin-top: 10px;
+      font-size: 18px;
+      color: rgba(255,255,255,.92);
+      opacity:0;
+      transform: translateY(6px);
+      transition: opacity 450ms var(--soft), transform 450ms var(--soft);
+    }
+    .hint.show{
+      opacity:1;
+      transform: translateY(0);
+    }
+
+    /* Kalp sahnesi */
+    .heartArea{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 14px;
+      padding: 10px 10px 2px;
+    }
+
+    .heartSVG{
+      width: min(320px, 70vw);
+      height:auto;
+      filter: drop-shadow(0 22px 30px rgba(0,0,0,.22));
+    }
+
+    /* Kalbin çizilerek oluşması */
+    #heartPath{
+      fill: none;
+      stroke: var(--heart);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: draw 1700ms var(--soft) forwards;
+    }
+
+    /* kalp dolsun (yumuşak) */
+    #heartFill{
+      opacity:0;
+      fill: color-mix(in srgb, var(--heart) 78%, #ffffff 22%);
+      transform-origin: 50% 55%;
+      transform: scale(.98);
+      animation: fillIn 900ms var(--soft) forwards;
+      animation-delay: 1500ms;
+    }
+
+    @keyframes draw{ to { stroke-dashoffset: 0; } }
+    @keyframes fillIn{ to { opacity:1; transform: scale(1); } }
+
+    .apology{
+      width: min(640px, 94vw);
+      margin-top: 8px;
+      font-size: clamp(22px, 4.2vw, 34px);
+      font-weight: 700;
+      line-height: 1.25;
+      opacity:0;
+      transform: translateY(10px);
+      animation: fadeUp 900ms var(--soft) forwards;
+      animation-delay: 2100ms;
+    }
+
+    .apology small{
+      display:block;
+      margin-top: 8px;
+      font-size: clamp(16px, 3.3vw, 22px);
+      font-weight: 600;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    /* Hayır sonrası küçük mesaj */
+    .noMsg{
+      margin-top: 12px;
+      font-size: 20px;
+      color: rgba(255,255,255,.92);
+      opacity:0;
+      transform: translateY(6px);
+      transition: opacity 450ms var(--soft), transform 450ms var(--soft);
+    }
+    .noMsg.show{ opacity:1; transform: translateY(0); }
+
+    /* Küçük ekranlar */
+    @media (max-width: 420px){
+      .btn{ font-size: 20px; padding: 10px 16px; }
     }
   </style>
 </head>
+
 <body>
+  <div class="stage">
+    <!-- SAHNE 1 -->
+    <section id="scene1" class="scene active" aria-label="Çiçek sahnesi">
+      <div class="card">
+        <div class="headline">Sana küçük bir sürprizim var…</div>
+        <div class="subline">Bir yazılımcının gözünden ilk çiçeğin</div>
 
-  <!-- Birinci Sahne: Çiçek ve Mesaj -->
-  <div id="scene1">
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAA... (örn. çiçek görselinin base64 verisi) ..." alt="Flower Bouquet" id="flower">
-    <div id="flowerText">Bir yazılımcının gözünden ilk çiçeğin...</div>
-    <div id="continuePrompt">
-      <p>Devam etmek istiyor musun?</p>
-      <button id="yesBtn">Evet</button>
-      <button id="noBtn">Hayır</button>
-    </div>
-  </div>
+        <div class="flowerWrap">
+          <!-- Çiçek demeti tamamen SVG ile çizildi -->
+          <svg class="flowerSVG" viewBox="0 0 420 420" role="img" aria-label="Kırmızı çiçek demeti">
+            <!-- saplar -->
+            <g opacity="0.95">
+              <path d="M210 410 C195 345, 155 310, 120 250" fill="none" stroke="#0a5a2b" stroke-width="10" stroke-linecap="round"/>
+              <path d="M210 410 C220 340, 250 300, 295 245" fill="none" stroke="#0a5a2b" stroke-width="10" stroke-linecap="round"/>
+              <path d="M210 410 C208 340, 210 300, 210 240" fill="none" stroke="#0a5a2b" stroke-width="10" stroke-linecap="round"/>
+              <path d="M210 410 C185 350, 205 300, 170 240" fill="none" stroke="#0a5a2b" stroke-width="9" stroke-linecap="round"/>
+              <path d="M210 410 C235 350, 220 300, 255 238" fill="none" stroke="#0a5a2b" stroke-width="9" stroke-linecap="round"/>
+            </g>
 
-  <!-- İkinci Sahne: Kalp ve Özür Mesajı -->
-  <div id="scene2">
-    <div id="heartContainer">
-      <svg id="heartSVG" viewBox="0 0 100 100">
-        <path id="heartPath" pathLength="1"
-              d="M50,90 C50,90 80,60 90,40 
-                 C100,20 80,0 50,20 
-                 C20,0 0,20 10,40 
-                 C20,60 50,90 50,90 Z" />
-      </svg>
-      <div id="apologyText">Biliyorum seni üzdüm ve tüm kalbimle özür diliyorum. Lütfen beni affet.</div>
-    </div>
+            <!-- yapraklar -->
+            <g fill="#0b6a33" opacity="0.95">
+              <path d="M150 285 C110 285, 92 310, 98 335 C110 360, 140 356, 165 328 C178 313, 175 292, 150 285 Z"/>
+              <path d="M275 285 C315 285, 332 310, 326 335 C314 360, 284 356, 259 328 C246 313, 249 292, 275 285 Z"/>
+              <path d="M188 270 C160 250, 145 230, 150 210 C165 188, 188 198, 205 218 C216 232, 208 258, 188 270 Z" opacity="0.9"/>
+              <path d="M232 270 C260 250, 275 230, 270 210 C255 188, 232 198, 215 218 C204 232, 212 258, 232 270 Z" opacity="0.9"/>
+            </g>
+
+            <!-- çiçek başları (kırmızı) -->
+            <defs>
+              <radialGradient id="petalGrad" cx="40%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#ff5a6a"/>
+                <stop offset="55%" stop-color="var(--flower)"/>
+                <stop offset="100%" stop-color="#8f0f1b"/>
+              </radialGradient>
+              <radialGradient id="centerGrad" cx="45%" cy="45%" r="60%">
+                <stop offset="0%" stop-color="#ffd7a6"/>
+                <stop offset="100%" stop-color="#c98a2b"/>
+              </radialGradient>
+            </defs>
+
+            <!-- Sol çiçek -->
+            <g transform="translate(0,0)">
+              <circle cx="130" cy="220" r="18" fill="url(#centerGrad)" opacity="0.95"/>
+              <g fill="url(#petalGrad)">
+                <ellipse cx="130" cy="190" rx="26" ry="38" transform="rotate(-10 130 190)"/>
+                <ellipse cx="105" cy="212" rx="26" ry="38" transform="rotate(-70 105 212)"/>
+                <ellipse cx="155" cy="212" rx="26" ry="38" transform="rotate(70 155 212)"/>
+                <ellipse cx="118" cy="245" rx="26" ry="38" transform="rotate(170 118 245)"/>
+                <ellipse cx="142" cy="245" rx="26" ry="38" transform="rotate(-170 142 245)"/>
+              </g>
+            </g>
+
+            <!-- Orta çiçek -->
+            <g transform="translate(0,0)">
+              <circle cx="210" cy="205" r="20" fill="url(#centerGrad)" opacity="0.95"/>
+              <g fill="url(#petalGrad)">
+                <ellipse cx="210" cy="172" rx="30" ry="44" transform="rotate(0 210 172)"/>
+                <ellipse cx="178" cy="198" rx="30" ry="44" transform="rotate(-65 178 198)"/>
+                <ellipse cx="242" cy="198" rx="30" ry="44" transform="rotate(65 242 198)"/>
+                <ellipse cx="194" cy="242" rx="30" ry="44" transform="rotate(160 194 242)"/>
+                <ellipse cx="226" cy="242" rx="30" ry="44" transform="rotate(-160 226 242)"/>
+              </g>
+            </g>
+
+            <!-- Sağ çiçek -->
+            <g transform="translate(0,0)">
+              <circle cx="295" cy="220" r="18" fill="url(#centerGrad)" opacity="0.95"/>
+              <g fill="url(#petalGrad)">
+                <ellipse cx="295" cy="190" rx="26" ry="38" transform="rotate(10 295 190)"/>
+                <ellipse cx="270" cy="212" rx="26" ry="38" transform="rotate(-70 270 212)"/>
+                <ellipse cx="320" cy="212" rx="26" ry="38" transform="rotate(70 320 212)"/>
+                <ellipse cx="283" cy="245" rx="26" ry="38" transform="rotate(170 283 245)"/>
+                <ellipse cx="307" cy="245" rx="26" ry="38" transform="rotate(-170 307 245)"/>
+              </g>
+            </g>
+
+            <!-- Bağlama kurdelesi -->
+            <g transform="translate(0,0)" opacity="0.95">
+              <path d="M210 342 C190 330, 165 328, 150 340 C170 370, 205 372, 210 352 C215 372, 250 370, 270 340 C255 328, 230 330, 210 342 Z"
+                    fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.25)" stroke-width="2"/>
+              <path d="M210 350 C185 350, 165 360, 150 376 C175 392, 200 390, 210 376
+                       C220 390, 245 392, 270 376 C255 360, 235 350, 210 350 Z"
+                    fill="rgba(255,255,255,.14)"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="prompt">
+          <div class="q">Devam etmek istiyor musun?</div>
+
+          <div class="btnRow">
+            <button class="btn" id="yesBtn">Evet</button>
+            <button class="btn" id="noBtn">Hayır</button>
+          </div>
+
+          <div class="hint" id="yesHint">Bence kesinlikle buna basmalısın.</div>
+          <div class="noMsg" id="noMsg">Peki… ama içimde bir şeyler eksik kaldı. Yine de seni kırmak istemem.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SAHNE 2 -->
+    <section id="scene2" class="scene" aria-label="Kalp sahnesi">
+      <div class="card">
+        <div class="heartArea">
+          <svg class="heartSVG" viewBox="0 0 100 100" aria-label="Mavi kalp">
+            <!-- dolgu -->
+            <path id="heartFill"
+              d="M50 88
+                 C50 88, 90 62, 92 38
+                 C94 18, 78 10, 66 16
+                 C57 20, 52 28, 50 32
+                 C48 28, 43 20, 34 16
+                 C22 10, 6 18, 8 38
+                 C10 62, 50 88, 50 88 Z" />
+            <!-- çizim -->
+            <path id="heartPath" pathLength="1"
+              d="M50 88
+                 C50 88, 90 62, 92 38
+                 C94 18, 78 10, 66 16
+                 C57 20, 52 28, 50 32
+                 C48 28, 43 20, 34 16
+                 C22 10, 6 18, 8 38
+                 C10 62, 50 88, 50 88 Z" />
+          </svg>
+
+          <div class="apology">
+            İrem… özür dilerim.
+            <small>
+              Seni kırdığımı biliyorum. Bahane aramıyorum.<br>
+              Sadece şunu bilmeni istiyorum: Gerçekten pişmanım ve telafi etmek istiyorum.<br>
+              Konuşabilir miyiz?
+            </small>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script>
-    // Evet butonuna tıklandığında geçişi tetikle
-    document.getElementById('yesBtn').addEventListener('click', function() {
-      // Birinci sahneyi yumuşakça gizle
-      document.getElementById('scene1').style.transition = 'opacity 1s';
-      document.getElementById('scene1').style.opacity = '0';
-      // Geçiş tamamlandıktan sonra ikinci sahneyi göster
-      setTimeout(function() {
-        document.getElementById('scene1').style.display = 'none';
-        document.getElementById('scene2').style.display = 'block';
-        // İkinci sahneyi görünür yapmak için küçük bir gecikmeyle opacity'yi 1 yap
-        document.getElementById('scene2').style.opacity = '0';
-        document.getElementById('scene2').style.transition = 'opacity 1s';
-        // Bir sonraki işleme bırakmak (asenkron olarak çalışması için)
-        requestAnimationFrame(() => {
-          document.getElementById('scene2').style.opacity = '1';
-        });
-      }, 1000); // 1s = scene1 solma süresi
+    const scene1 = document.getElementById("scene1");
+    const scene2 = document.getElementById("scene2");
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn  = document.getElementById("noBtn");
+    const yesHint = document.getElementById("yesHint");
+    const noMsg = document.getElementById("noMsg");
+
+    function goToScene2(){
+      // yumuşak geçiş
+      scene1.classList.remove("active");
+      setTimeout(() => {
+        scene2.classList.add("active");
+      }, 520);
+    }
+
+    yesBtn.addEventListener("mouseenter", () => yesHint.classList.add("show"));
+    yesBtn.addEventListener("focus", () => yesHint.classList.add("show"));
+    yesBtn.addEventListener("mouseleave", () => yesHint.classList.remove("show"));
+    yesBtn.addEventListener("blur", () => yesHint.classList.remove("show"));
+
+    // Mobilde de görünsün diye tıkta da gösterelim
+    yesBtn.addEventListener("click", () => {
+      yesHint.classList.add("show");
+      noMsg.classList.remove("show");
+      setTimeout(goToScene2, 650);
     });
-    // Hayır butonuna tıklandığında - isterseniz farklı bir eylem eklenebilir
-    document.getElementById('noBtn').addEventListener('click', function() {
-      // Örnek: Hayır'a basıldığında sadece bir alert veriyoruz veya hiçbir şey yapmıyoruz.
-      alert('Üzgünüz, devam etmeden sayfadan çıkılıyor.');
-      // Gerçek senaryoda belki pencere kapanabilir veya başka bir sayfaya yönlenebilir.
+
+    noBtn.addEventListener("click", () => {
+      noMsg.classList.add("show");
+      yesHint.classList.remove("show");
+      // İstersen "Hayır"ı kaçırıp "Evet"e yönlendiren tatlı bir numara da eklerim.
     });
   </script>
-
 </body>
 </html>
 
