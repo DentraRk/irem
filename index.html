@@ -1,167 +1,180 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<title>İrem için</title>
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Özür Dilerim</title>
+  <!-- El yazısı fontu (Dancing Script) yükleniyor -->
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
+  <style>
     body {
-        margin: 0;
-        background: radial-gradient(circle at top, #ffe6eb, #ffd6e0, #ffcad6);
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-family: system-ui, sans-serif;
-        overflow: hidden;
+      margin: 0;
+      background-color: #008000; /* Yeşil arka plan */
+      font-family: 'Dancing Script', cursive;
+      text-align: center;
+      color: white;
     }
-
-    /* Kalp merkez */
+    /* İlk sahne kapsayıcısı */
+    #scene1 {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    /* Çiçek görseli */
+    #flower {
+      position: absolute;
+      bottom: -50%; /* başlangıçta görünmeyecek (altın dışında) */
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: auto;
+      /* animasyon uygulanacak */
+      animation: riseUp 3s ease-out forwards;
+    }
+    /* Çiçek üzerindeki metin */
+    #flowerText {
+      position: absolute;
+      bottom: 40%; /* çiçeğin biraz üzerinde */
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.5em;
+      opacity: 0;
+      /* Metin biraz gecikmeli belirsin */
+      animation: fadeInText 2s ease 1s forwards;
+    }
+    /* Devam etme sorusu ve butonlar */
+    #continuePrompt {
+      opacity: 0;
+      margin-top: 60%; /* sayfanın ortasına doğru (çiçeğin altına) */
+      /* Butonların çıkışı biraz daha gecikmeli olsun */
+      animation: fadeInText 2s ease 3.5s forwards;
+    }
+    #continuePrompt p {
+      font-size: 1.3em;
+      margin-bottom: 1em;
+    }
+    #continuePrompt button {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.1em;
+      padding: 0.5em 1em;
+      margin: 0 1em;
+      border: 2px solid white;
+      background: transparent;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #continuePrompt button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    /* İkinci sahne kapsayıcısı (başta gizli) */
+    #scene2 {
+      display: none;
+      position: relative;
+      min-height: 100vh;
+    }
+    /* Kalp SVG ve metin konteyneri ortalamak için */
     #heartContainer {
-        position: absolute;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    /* SVG kalp boyutu ayarı (mobil uyum için yüzdeyle verilebilir) */
+    #heartSVG {
+      width: 40vw;
+      max-width: 300px;
+      height: auto;
+    }
+    /* Kalp çizimi path stili ve animasyonu */
+    #heartPath {
+      fill: none;
+      stroke: #2196F3;
+      stroke-width: 2;
+      /* Çizim animasyonu için dash array tekniği */
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: drawHeart 4s ease-out forwards;
+    }
+    /* Özür mesajı stili */
+    #apologyText {
+      margin-top: 20px;
+      font-size: 1.4em;
+      opacity: 0;
+      /* Kalp çizimi bitince belirsin (4s animasyon + 0.5s gecikme) */
+      animation: fadeInText 2s ease 4.5s forwards;
     }
 
-    /* Kalp şekli */
-    .heart {
-        position: relative;
-        width: 150px;
-        height: 135px;
-        background: #e11d48;
-        transform: rotate(-45deg) scale(0);
-        opacity: 0;
-        border-radius: 20px;
-        box-shadow: 0 0 40px rgba(225,29,72,0.6);
-        transition: transform 1.8s ease-out, opacity 1.5s ease-out;
+    /* Animasyon tanımları */
+    @keyframes riseUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
     }
-
-    .heart::before,
-    .heart::after {
-        content: "";
-        position: absolute;
-        width: 150px;
-        height: 150px;
-        background: #e11d48;
-        border-radius: 50%;
+    @keyframes fadeInText {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
-
-    .heart::before { top: -75px; left: 0; }
-    .heart::after { left: 75px; top: 0; }
-
-    .heart.show {
-        transform: rotate(-45deg) scale(1);
-        opacity: 1;
-        animation: heartBeat 1.2s infinite ease-in-out 2s;
+    @keyframes drawHeart {
+      from { stroke-dashoffset: 1; }
+      to   { stroke-dashoffset: 0; }
     }
-
-    @keyframes heartBeat {
-        0%   { transform: rotate(-45deg) scale(1); }
-        30%  { transform: rotate(-45deg) scale(1.12); }
-        60%  { transform: rotate(-45deg) scale(1); }
-        100% { transform: rotate(-45deg) scale(1.08); }
-    }
-
-    /* Parıltılar */
-    .sparkle {
-        position: absolute;
-        width: 6px;
-        height: 6px;
-        background: #ffffff;
-        border-radius: 50%;
-        opacity: 0;
-        animation: sparkleMove 2s ease-out forwards;
-        filter: drop-shadow(0 0 8px #fff);
-    }
-
-    @keyframes sparkleMove {
-        0% {
-            transform: translateY(0) scale(0.4);
-            opacity: 0;
-        }
-        20% {
-            opacity: 1;
-            transform: translateY(-20px) scale(1.1);
-        }
-        100% {
-            transform: translateY(-140px) scale(0);
-            opacity: 0;
-        }
-    }
-
-    /* Mesaj */
-    #msg {
-        position: absolute;
-        top: 75%;
-        left: 50%;
-        transform: translate(-50%, 20px);
-        font-size: 1.3rem;
-        color: #7f1330;
-        text-align: center;
-        font-weight: 600;
-        opacity: 0;
-        transition: opacity 1.5s ease, transform 1.5s ease;
-        background: rgba(255, 255, 255, 0.92);
-        padding: 14px 20px;
-        border-radius: 18px;
-        box-shadow: 0 10px 26px rgba(0,0,0,0.15);
-    }
-
-    #msg.show {
-        opacity: 1;
-        transform: translate(-50%, 0);
-    }
-
-</style>
+  </style>
 </head>
-
 <body>
 
-<div id="heartContainer">
-    <div class="heart" id="heart"></div>
-</div>
+  <!-- Birinci Sahne: Çiçek ve Mesaj -->
+  <div id="scene1">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAA... (örn. çiçek görselinin base64 verisi) ..." alt="Flower Bouquet" id="flower">
+    <div id="flowerText">Bir yazılımcının gözünden ilk çiçeğin...</div>
+    <div id="continuePrompt">
+      <p>Devam etmek istiyor musun?</p>
+      <button id="yesBtn">Evet</button>
+      <button id="noBtn">Hayır</button>
+    </div>
+  </div>
 
-<div id="msg">Özür dilerim İrem...<br>Kalbimin en içinden, gerçekten üzgünüm.</div>
+  <!-- İkinci Sahne: Kalp ve Özür Mesajı -->
+  <div id="scene2">
+    <div id="heartContainer">
+      <svg id="heartSVG" viewBox="0 0 100 100">
+        <path id="heartPath" pathLength="1"
+              d="M50,90 C50,90 80,60 90,40 
+                 C100,20 80,0 50,20 
+                 C20,0 0,20 10,40 
+                 C20,60 50,90 50,90 Z" />
+      </svg>
+      <div id="apologyText">Biliyorum seni üzdüm ve tüm kalbimle özür diliyorum. Lütfen beni affet.</div>
+    </div>
+  </div>
 
-<script>
-    const heart = document.getElementById("heart");
-    const msg = document.getElementById("msg");
-
-    // Sayfa açılınca otomatik çalışsın
-    window.onload = () => {
-
-        // Parıltıları oluştur
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight * 0.4;
-
-        for (let i = 0; i < 40; i++) {
-            const s = document.createElement("div");
-            s.classList.add("sparkle");
-
-            const angle = Math.random() * Math.PI * 2;
-            const radius = 40 + Math.random() * 80;
-
-            const x = centerX + Math.cos(angle) * radius;
-            const y = centerY + Math.sin(angle) * radius;
-
-            s.style.left = x + "px";
-            s.style.top = (y + 50) + "px";
-            s.style.animationDelay = (Math.random() * 1.2) + "s";
-
-            document.body.appendChild(s);
-        }
-
-        // Kalbi göster
-        setTimeout(() => {
-            heart.classList.add("show");
-        }, 500);
-
-        // Mesajı göster
-        setTimeout(() => {
-            msg.classList.add("show");
-        }, 2200);
-    };
-</script>
+  <script>
+    // Evet butonuna tıklandığında geçişi tetikle
+    document.getElementById('yesBtn').addEventListener('click', function() {
+      // Birinci sahneyi yumuşakça gizle
+      document.getElementById('scene1').style.transition = 'opacity 1s';
+      document.getElementById('scene1').style.opacity = '0';
+      // Geçiş tamamlandıktan sonra ikinci sahneyi göster
+      setTimeout(function() {
+        document.getElementById('scene1').style.display = 'none';
+        document.getElementById('scene2').style.display = 'block';
+        // İkinci sahneyi görünür yapmak için küçük bir gecikmeyle opacity'yi 1 yap
+        document.getElementById('scene2').style.opacity = '0';
+        document.getElementById('scene2').style.transition = 'opacity 1s';
+        // Bir sonraki işleme bırakmak (asenkron olarak çalışması için)
+        requestAnimationFrame(() => {
+          document.getElementById('scene2').style.opacity = '1';
+        });
+      }, 1000); // 1s = scene1 solma süresi
+    });
+    // Hayır butonuna tıklandığında - isterseniz farklı bir eylem eklenebilir
+    document.getElementById('noBtn').addEventListener('click', function() {
+      // Örnek: Hayır'a basıldığında sadece bir alert veriyoruz veya hiçbir şey yapmıyoruz.
+      alert('Üzgünüz, devam etmeden sayfadan çıkılıyor.');
+      // Gerçek senaryoda belki pencere kapanabilir veya başka bir sayfaya yönlenebilir.
+    });
+  </script>
 
 </body>
 </html>
+
