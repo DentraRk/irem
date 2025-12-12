@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>İrem için</title>
+<style>
+    body {
+        margin: 0;
+        background: radial-gradient(circle at top, #ffe6eb, #ffd6e0, #ffcad6);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: system-ui, sans-serif;
+        overflow: hidden;
+    }
+
+    /* Kalp merkez */
+    #heartContainer {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    /* Kalp şekli */
+    .heart {
+        position: relative;
+        width: 150px;
+        height: 135px;
+        background: #e11d48;
+        transform: rotate(-45deg) scale(0);
+        opacity: 0;
+        border-radius: 20px;
+        box-shadow: 0 0 40px rgba(225,29,72,0.6);
+        transition: transform 1.8s ease-out, opacity 1.5s ease-out;
+    }
+
+    .heart::before,
+    .heart::after {
+        content: "";
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        background: #e11d48;
+        border-radius: 50%;
+    }
+
+    .heart::before { top: -75px; left: 0; }
+    .heart::after { left: 75px; top: 0; }
+
+    .heart.show {
+        transform: rotate(-45deg) scale(1);
+        opacity: 1;
+        animation: heartBeat 1.2s infinite ease-in-out 2s;
+    }
+
+    @keyframes heartBeat {
+        0%   { transform: rotate(-45deg) scale(1); }
+        30%  { transform: rotate(-45deg) scale(1.12); }
+        60%  { transform: rotate(-45deg) scale(1); }
+        100% { transform: rotate(-45deg) scale(1.08); }
+    }
+
+    /* Parıltılar */
+    .sparkle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #ffffff;
+        border-radius: 50%;
+        opacity: 0;
+        animation: sparkleMove 2s ease-out forwards;
+        filter: drop-shadow(0 0 8px #fff);
+    }
+
+    @keyframes sparkleMove {
+        0% {
+            transform: translateY(0) scale(0.4);
+            opacity: 0;
+        }
+        20% {
+            opacity: 1;
+            transform: translateY(-20px) scale(1.1);
+        }
+        100% {
+            transform: translateY(-140px) scale(0);
+            opacity: 0;
+        }
+    }
+
+    /* Mesaj */
+    #msg {
+        position: absolute;
+        top: 75%;
+        left: 50%;
+        transform: translate(-50%, 20px);
+        font-size: 1.3rem;
+        color: #7f1330;
+        text-align: center;
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 1.5s ease, transform 1.5s ease;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 14px 20px;
+        border-radius: 18px;
+        box-shadow: 0 10px 26px rgba(0,0,0,0.15);
+    }
+
+    #msg.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+
+</style>
+</head>
+
+<body>
+
+<div id="heartContainer">
+    <div class="heart" id="heart"></div>
+</div>
+
+<div id="msg">Özür dilerim İrem...<br>Kalbimin en içinden, gerçekten üzgünüm.</div>
+
+<script>
+    const heart = document.getElementById("heart");
+    const msg = document.getElementById("msg");
+
+    // Sayfa açılınca otomatik çalışsın
+    window.onload = () => {
+
+        // Parıltıları oluştur
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight * 0.4;
+
+        for (let i = 0; i < 40; i++) {
+            const s = document.createElement("div");
+            s.classList.add("sparkle");
+
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 40 + Math.random() * 80;
+
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+
+            s.style.left = x + "px";
+            s.style.top = (y + 50) + "px";
+            s.style.animationDelay = (Math.random() * 1.2) + "s";
+
+            document.body.appendChild(s);
+        }
+
+        // Kalbi göster
+        setTimeout(() => {
+            heart.classList.add("show");
+        }, 500);
+
+        // Mesajı göster
+        setTimeout(() => {
+            msg.classList.add("show");
+        }, 2200);
+    };
+</script>
+
+</body>
+</html>
